@@ -25,7 +25,9 @@ export function displayFonts(fonts, loadingEl, resultsEl) {
         html += `<div class="font-family-header">[${family}]</div>`;
         html += `<div class="font-combinations">`;
         familyFonts.forEach((font) => {
-            html += `<div class="font-combination">- ${font.fontSize}/${font.lineHeight}, (${font.weight})</div>`;
+            // Create a unique key for matching
+            const fontKey = `${font.family}|${font.weight}|${font.fontSize}|${font.lineHeight}`;
+            html += `<div class="font-combination" data-font-key="${fontKey}" data-font-family="${font.family}" data-font-weight="${font.weight}" data-font-size="${font.fontSize}" data-line-height="${font.lineHeight}">- ${font.fontSize}/${font.lineHeight}, (${font.weight})</div>`;
         });
         html += `</div>`;
         html += `</div>`;

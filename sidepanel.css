@@ -50,6 +50,47 @@ h1 {
     opacity: 0.7;
 }
 
+.hover-toggle-button {
+    width: 100%;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    background-color: #f0f0f0;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 20px;
+}
+
+.hover-toggle-button:hover:not(:disabled) {
+    background-color: #e0e0e0;
+    border-color: #bbb;
+}
+
+.hover-toggle-button:active:not(:disabled) {
+    background-color: #d0d0d0;
+}
+
+.hover-toggle-button:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.hover-toggle-button.active {
+    background-color: #4caf50;
+    color: white;
+    border-color: #4caf50;
+}
+
+.hover-toggle-button.active:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+}
+
 .loading {
     text-align: center;
     padding: 40px 20px;
@@ -102,4 +143,15 @@ h1 {
     font-size: 14px;
     color: #666;
     font-family: "Courier New", monospace;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.font-combination.highlighted {
+    background-color: #fff3cd;
+    color: #856404;
+    outline: 2px solid #ffc107;
+    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
 }
