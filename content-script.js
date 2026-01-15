@@ -4,7 +4,8 @@
     let mouseOutListener = null;
     let documentMouseLeaveListener = null;
     let debounceTimer = null;
-    let currentlyHighlightedElement = null;
+    let currentlyHighlightedElements = new Set();
+    let hoverMode = "single"; // "single" or "group"
     const DEBOUNCE_DELAY = 100; // ms
 
     // Helper function to check if extension context is still valid
@@ -53,7 +54,6 @@
         const fontSize = computedStyle.fontSize;
         const lineHeight = computedStyle.lineHeight;
 
-        // Extract just the first font family (remove fallbacks)
         const primaryFamily = fontFamily.split(",")[0].replace(/['"]/g, "").trim();
 
         return {
@@ -64,18 +64,45 @@
         };
     }
 
-    function highlightElement(element) {
-        // Remove highlight from previous element
-        if (currentlyHighlightedElement && currentlyHighlightedElement !== element) {
-            removeHighlight(currentlyHighlightedElement);
+    function findElementsWithMatchingFont(fontProps) {
+        const matchingElements = [];
+        const allElements = document.querySelectorAll("*");
+
+        allElements.forEach((element) => {
+            const elementFontProps = getFontProperties(element);
+            if (
+                elementFontProps.family === fontProps.family &&
+                elementFontProps.weight === fontProps.weight &&
+                elementFontProps.fontSize === fontProps.fontSize &&
+                elementFontProps.lineHeight === fontProps.lineHeight
+            ) {
+                matchingElements.push(element);
+            }
+        });
+
+        return matchingElements;
+    }
+
+    function highlightElement(element, fontProps) {
+        clearAllHighlights();
+
+        if (!element || !fontProps) {
+            return;
         }
 
-        // Add highlight to current element
-        if (element && element !== currentlyHighlightedElement) {
+        if (hoverMode === "group") {
+            const matchingElements = findElementsWithMatchingFont(fontProps);
+            matchingElements.forEach((el) => {
+                el.style.outline = "2px solid #4285f4";
+                el.style.outlineOffset = "2px";
+                el.style.boxShadow = "0 0 0 2px rgba(66, 133, 244, 0.3)";
+                currentlyHighlightedElements.add(el);
+            });
+        } else {
             element.style.outline = "2px solid #4285f4";
             element.style.outlineOffset = "2px";
             element.style.boxShadow = "0 0 0 2px rgba(66, 133, 244, 0.3)";
-            currentlyHighlightedElement = element;
+            currentlyHighlightedElements.add(element);
         }
     }
 
@@ -84,16 +111,17 @@
             element.style.outline = "";
             element.style.outlineOffset = "";
             element.style.boxShadow = "";
-        }
-        if (element === currentlyHighlightedElement) {
-            currentlyHighlightedElement = null;
+            currentlyHighlightedElements.delete(element);
         }
     }
 
     function clearAllHighlights() {
-        if (currentlyHighlightedElement) {
-            removeHighlight(currentlyHighlightedElement);
-        }
+        currentlyHighlightedElements.forEach((element) => {
+            element.style.outline = "";
+            element.style.outlineOffset = "";
+            element.style.boxShadow = "";
+        });
+        currentlyHighlightedElements.clear();
     }
 
     function startHoverDetection() {
@@ -102,14 +130,7 @@
         }
 
         mouseOutListener = (e) => {
-            // Remove highlight when mouse leaves the element
-            if (e.target === currentlyHighlightedElement) {
-                removeHighlight(e.target);
-            }
-
-            // Check if mouse left the document (no relatedTarget means it left the window)
             if (!e.relatedTarget || (e.relatedTarget === document.body && e.target === document.documentElement)) {
-                // Mouse left the page
                 clearAllHighlights();
                 safeSendMessage({
                     type: "MOUSE_LEFT_PAGE",
@@ -133,9 +154,7 @@
 
             debounceTimer = setTimeout(() => {
                 const fontProps = getFontProperties(e.target);
-                // Highlight the element on the page
-                highlightElement(e.target);
-                // Send message to sidepanel
+                highlightElement(e.target, fontProps);
                 safeSendMessage({
                     type: "FONT_HOVER",
                     font: fontProps,
@@ -180,6 +199,7 @@
 
             try {
                 if (message.type === "START_HOVER_DETECTION") {
+                    hoverMode = message.mode || "single";
                     startHoverDetection();
                     sendResponse({ success: true });
                 } else if (message.type === "STOP_HOVER_DETECTION") {

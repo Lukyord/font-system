@@ -10,7 +10,10 @@
     <body>
         <div class="container">
             <button id="scanButton" class="scan-button">Scan Fonts</button>
-            <button id="hoverToggleButton" class="hover-toggle-button" disabled>Enable Hover Mode</button>
+            <div class="hover-mode-wrapper">
+                <button id="singleHoverButton" class="hover-toggle-button" disabled>Single Hover</button>
+                <button id="groupHoverButton" class="hover-toggle-button" disabled>Group Hover</button>
+            </div>
             <div id="loading" class="loading" style="display: none">Scanning fonts...</div>
             <div id="error" class="error" style="display: none"></div>
             <div id="results" class="results"></div>

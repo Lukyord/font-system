@@ -1,6 +1,16 @@
 /* SIDEPANEL ========================================================== */
+.result-subttl {
+    color: var(--color-text-lighter);
+    margin-bottom: var(--spacing-3xs);
+}
+
 .container {
     padding: var(--spacing-sm);
+
+    .hover-mode-wrapper {
+        display: flex;
+        gap: var(--spacing-3xs);
+    }
 }
 
 [class*="-button"] {
@@ -98,17 +108,22 @@
 
 .font-group {
     background-color: var(--color-white);
-    padding: var(--spacing-xs) var(--spacing-3xs);
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border-light);
     box-shadow: 0 1px 3px var(--color-shadow);
+    overflow: clip;
 }
 
 .font-family-header {
+    position: sticky;
+    top: 0;
+    padding: var(--spacing-3xs);
+    background-color: rgba(var(--color-white-rgb), 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     font-size: var(--font-size-body);
     line-height: var(--line-height-body);
     font-weight: 600;
-    margin-bottom: var(--spacing-4xs);
     color: var(--color-text-dark);
     cursor: pointer;
     display: flex;
@@ -143,6 +158,7 @@
     flex-direction: column;
     gap: var(--spacing-4xs);
     margin-left: var(--spacing-4xs);
+    margin-bottom: var(--spacing-3xs);
 }
 
 .font-size-group {

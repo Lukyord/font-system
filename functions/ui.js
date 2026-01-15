@@ -3,28 +3,31 @@
  * @param {HTMLElement} errorEl - Error element
  * @param {HTMLElement} resultsEl - Results container
  * @param {HTMLElement} scanButton - Scan button
- * @param {HTMLElement} hoverToggleButton - Hover toggle button
+ * @param {HTMLElement} singleHoverButton - Single hover button
+ * @param {HTMLElement} groupHoverButton - Group hover button
  */
-export function resetUI(errorEl, resultsEl, scanButton, hoverToggleButton) {
+export function resetUI(errorEl, resultsEl, scanButton, singleHoverButton, groupHoverButton) {
     errorEl.style.display = "none";
     resultsEl.innerHTML = "";
     scanButton.disabled = false;
-    hoverToggleButton.disabled = true;
-    hoverToggleButton.textContent = "Enable Hover Mode";
-    hoverToggleButton.classList.remove("active");
+    singleHoverButton.disabled = true;
+    singleHoverButton.textContent = "Single Hover";
+    singleHoverButton.classList.remove("active");
+    groupHoverButton.disabled = true;
+    groupHoverButton.textContent = "Group Hover";
+    groupHoverButton.classList.remove("active");
 }
 
 /**
  * Update hover button UI state
- * @param {HTMLElement} hoverToggleButton - Hover toggle button
+ * @param {HTMLElement} hoverButton - Hover button
  * @param {boolean} enabled - Whether hover mode is enabled
  */
-export function updateHoverButtonUI(hoverToggleButton, enabled) {
-    hoverToggleButton.textContent = enabled ? "Disable Hover Mode" : "Enable Hover Mode";
+export function updateHoverButtonUI(hoverButton, enabled) {
     if (enabled) {
-        hoverToggleButton.classList.add("active");
+        hoverButton.classList.add("active");
     } else {
-        hoverToggleButton.classList.remove("active");
+        hoverButton.classList.remove("active");
     }
 }
 

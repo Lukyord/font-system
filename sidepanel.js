@@ -8,7 +8,8 @@ import { displayFonts } from "./functions/display.js";
 
 // DOM element references
 const scanButton = document.getElementById("scanButton");
-const hoverToggleButton = document.getElementById("hoverToggleButton");
+const singleHoverButton = document.getElementById("singleHoverButton");
+const groupHoverButton = document.getElementById("groupHoverButton");
 const loadingEl = document.getElementById("loading");
 const errorEl = document.getElementById("error");
 const resultsEl = document.getElementById("results");
@@ -18,6 +19,7 @@ const resultsEl = document.getElementById("results");
 // ==========================================================
 const state = {
     hoverModeEnabled: false,
+    hoverMode: null, // "single" or "group"
     currentTabIdForHover: null,
     currentTabId: null,
 };
@@ -28,8 +30,9 @@ const state = {
 
 function resetHoverMode() {
     state.hoverModeEnabled = false;
+    state.hoverMode = null;
     state.currentTabIdForHover = null;
-    resetUI(errorEl, resultsEl, scanButton, hoverToggleButton);
+    resetUI(errorEl, resultsEl, scanButton, singleHoverButton, groupHoverButton);
     clearHighlights();
 }
 
@@ -48,32 +51,60 @@ function onScanSuccess(tabId, fonts) {
     setupAccordion();
     injectHoverDetection(tabId, loadingEl, errorEl);
     state.currentTabIdForHover = tabId;
-    hoverToggleButton.disabled = false;
+    singleHoverButton.disabled = false;
+    groupHoverButton.disabled = false;
 }
 
 // ==========================================================
 // MAIN FUNCTIONS
 // ==========================================================
 function scanFonts() {
-    resetUI(errorEl, resultsEl, scanButton, hoverToggleButton);
+    resetUI(errorEl, resultsEl, scanButton, singleHoverButton, groupHoverButton);
     executeScanFonts({
         loadingEl,
         errorEl,
         resultsEl,
         scanButton,
-        hoverToggleButton,
+        hoverToggleButton: singleHoverButton,
         onSuccess: onScanSuccess,
     });
 }
 
-function toggleHoverMode() {
-    state.hoverModeEnabled = !state.hoverModeEnabled;
-    updateHoverButtonUI(hoverToggleButton, state.hoverModeEnabled);
-
-    if (state.hoverModeEnabled) {
-        startHoverDetection(state.currentTabIdForHover, loadingEl, errorEl);
-    } else {
+function toggleSingleHoverMode() {
+    if (state.hoverModeEnabled && state.hoverMode === "single") {
+        state.hoverModeEnabled = false;
+        state.hoverMode = null;
         stopHoverDetection(state.currentTabIdForHover);
+        updateHoverButtonUI(singleHoverButton, false);
+        updateHoverButtonUI(groupHoverButton, false);
+    } else {
+        if (state.hoverModeEnabled) {
+            stopHoverDetection(state.currentTabIdForHover);
+        }
+        state.hoverModeEnabled = true;
+        state.hoverMode = "single";
+        startHoverDetection(state.currentTabIdForHover, loadingEl, errorEl, "single");
+        updateHoverButtonUI(singleHoverButton, true);
+        updateHoverButtonUI(groupHoverButton, false);
+    }
+}
+
+function toggleGroupHoverMode() {
+    if (state.hoverModeEnabled && state.hoverMode === "group") {
+        state.hoverModeEnabled = false;
+        state.hoverMode = null;
+        stopHoverDetection(state.currentTabIdForHover);
+        updateHoverButtonUI(singleHoverButton, false);
+        updateHoverButtonUI(groupHoverButton, false);
+    } else {
+        if (state.hoverModeEnabled) {
+            stopHoverDetection(state.currentTabIdForHover);
+        }
+        state.hoverModeEnabled = true;
+        state.hoverMode = "group";
+        startHoverDetection(state.currentTabIdForHover, loadingEl, errorEl, "group");
+        updateHoverButtonUI(singleHoverButton, false);
+        updateHoverButtonUI(groupHoverButton, true);
     }
 }
 
@@ -108,7 +139,8 @@ function setupMessageListener() {
 
 function setupEventListeners() {
     scanButton.addEventListener("click", scanFonts);
-    hoverToggleButton.addEventListener("click", toggleHoverMode);
+    singleHoverButton.addEventListener("click", toggleSingleHoverMode);
+    groupHoverButton.addEventListener("click", toggleGroupHoverMode);
 
     chrome.tabs.onActivated.addListener(() => {
         updateCurrentTab(state, () => {
@@ -120,7 +152,7 @@ function setupEventListeners() {
 
     chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         if (changeInfo.status === "complete" && tabId === state.currentTabId) {
-            resetUI(errorEl, resultsEl, scanButton, hoverToggleButton);
+            resetUI(errorEl, resultsEl, scanButton, singleHoverButton, groupHoverButton);
             if (state.hoverModeEnabled) {
                 resetHoverMode();
             }

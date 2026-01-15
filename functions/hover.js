@@ -29,15 +29,15 @@ export function injectHoverDetection(tabId, loadingEl, errorEl) {
  * @param {number} currentTabIdForHover - Current tab ID for hover detection
  * @param {HTMLElement} loadingEl - Loading element for error display
  * @param {HTMLElement} errorEl - Error element for error display
+ * @param {string} mode - Hover mode: "single" or "group"
  */
-export function startHoverDetection(currentTabIdForHover, loadingEl, errorEl) {
+export function startHoverDetection(currentTabIdForHover, loadingEl, errorEl, mode = "single") {
     if (!currentTabIdForHover) {
         return;
     }
 
-    sendMessageToTab(currentTabIdForHover, { type: MESSAGE_TYPES.START_HOVER_DETECTION }, (error) => {
+    sendMessageToTab(currentTabIdForHover, { type: MESSAGE_TYPES.START_HOVER_DETECTION, mode }, (error) => {
         if (error && !isContextInvalidated(error)) {
-            // Content script might not be injected, try to inject it
             injectHoverDetection(currentTabIdForHover, loadingEl, errorEl);
         }
     });
