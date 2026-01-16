@@ -1,11 +1,20 @@
 import { isContextInvalidated } from "./functions/utils.js";
 import { MESSAGE_TYPES } from "./functions/messaging.js";
-import { resetUI, updateHoverButtonUI, clearHighlights, highlightFontCombination } from "./functions/ui.js";
-import { injectHoverDetection, startHoverDetection, stopHoverDetection } from "./functions/hover.js";
+import {
+    resetUI,
+    updateHoverButtonUI,
+    clearHighlights,
+    highlightFontCombination,
+} from "./functions/ui.js";
+import {
+    injectHoverDetection,
+    startHoverDetection,
+    stopHoverDetection,
+} from "./functions/hover.js";
 import { scanFonts as executeScanFonts } from "./functions/scanning.js";
 import { updateCurrentTab } from "./functions/tabs.js";
 import { displayFonts } from "./functions/display.js";
-import { checkGoogleFonts } from "./functions/api.js";
+import { checkFontsAvailability } from "./functions/api.js";
 
 // DOM element references
 const scanButton = document.getElementById("scanButton");
@@ -33,14 +42,23 @@ function resetHoverMode() {
     state.hoverModeEnabled = false;
     state.hoverMode = null;
     state.currentTabIdForHover = null;
-    resetUI(errorEl, resultsEl, scanButton, singleHoverButton, groupHoverButton);
+    resetUI(
+        errorEl,
+        resultsEl,
+        scanButton,
+        singleHoverButton,
+        groupHoverButton
+    );
     clearHighlights();
 }
 
 function setupAccordion() {
     const fontHeaders = resultsEl.querySelectorAll(".font-family-header");
     fontHeaders.forEach((header) => {
-        header.addEventListener("click", () => {
+        header.addEventListener("click", (e) => {
+            if (e.target.closest(".font-family-header-right")) {
+                return;
+            }
             const fontGroup = header.closest(".font-group");
             fontGroup.classList.toggle("collapsed");
         });
@@ -48,8 +66,8 @@ function setupAccordion() {
 }
 
 async function onScanSuccess(tabId, fonts) {
-    const googleFontsMap = await checkGoogleFonts(fonts);
-    displayFonts(fonts, loadingEl, resultsEl, googleFontsMap);
+    const fontsAvailabilityMap = await checkFontsAvailability(fonts);
+    displayFonts(fonts, loadingEl, resultsEl, fontsAvailabilityMap);
     setupAccordion();
     injectHoverDetection(tabId, loadingEl, errorEl);
     state.currentTabIdForHover = tabId;
@@ -61,7 +79,13 @@ async function onScanSuccess(tabId, fonts) {
 // MAIN FUNCTIONS
 // ==========================================================
 function scanFonts() {
-    resetUI(errorEl, resultsEl, scanButton, singleHoverButton, groupHoverButton);
+    resetUI(
+        errorEl,
+        resultsEl,
+        scanButton,
+        singleHoverButton,
+        groupHoverButton
+    );
     executeScanFonts({
         loadingEl,
         errorEl,
@@ -85,7 +109,12 @@ function toggleSingleHoverMode() {
         }
         state.hoverModeEnabled = true;
         state.hoverMode = "single";
-        startHoverDetection(state.currentTabIdForHover, loadingEl, errorEl, "single");
+        startHoverDetection(
+            state.currentTabIdForHover,
+            loadingEl,
+            errorEl,
+            "single"
+        );
         updateHoverButtonUI(singleHoverButton, true);
         updateHoverButtonUI(groupHoverButton, false);
     }
@@ -104,7 +133,12 @@ function toggleGroupHoverMode() {
         }
         state.hoverModeEnabled = true;
         state.hoverMode = "group";
-        startHoverDetection(state.currentTabIdForHover, loadingEl, errorEl, "group");
+        startHoverDetection(
+            state.currentTabIdForHover,
+            loadingEl,
+            errorEl,
+            "group"
+        );
         updateHoverButtonUI(singleHoverButton, false);
         updateHoverButtonUI(groupHoverButton, true);
     }
@@ -123,15 +157,17 @@ function handleMessage(message) {
 
 function setupMessageListener() {
     try {
-        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-            try {
-                handleMessage(message);
-            } catch (e) {
-                if (isContextInvalidated(e)) {
-                    console.warn("Extension context invalidated");
+        chrome.runtime.onMessage.addListener(
+            (message, sender, sendResponse) => {
+                try {
+                    handleMessage(message);
+                } catch (e) {
+                    if (isContextInvalidated(e)) {
+                        console.warn("Extension context invalidated");
+                    }
                 }
             }
-        });
+        );
     } catch (e) {
         if (isContextInvalidated(e)) {
             console.warn("Extension context invalidated");
@@ -154,7 +190,13 @@ function setupEventListeners() {
 
     chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         if (changeInfo.status === "complete" && tabId === state.currentTabId) {
-            resetUI(errorEl, resultsEl, scanButton, singleHoverButton, groupHoverButton);
+            resetUI(
+                errorEl,
+                resultsEl,
+                scanButton,
+                singleHoverButton,
+                groupHoverButton
+            );
             if (state.hoverModeEnabled) {
                 resetHoverMode();
             }

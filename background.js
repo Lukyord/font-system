@@ -12,7 +12,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 // Handle messages from sidepanel
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "CHECK_GOOGLE_FONTS") {
-        checkGoogleFonts(message.fonts)
+        checkFontsAvailability(message.fonts)
             .then((result) => {
                 sendResponse({ success: true, data: result });
             })
@@ -24,17 +24,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-async function checkGoogleFonts(fonts) {
+async function checkFontsAvailability(fonts) {
     const uniqueFontFamilies = [...new Set(fonts.map((font) => font.family))];
 
     try {
-        const response = await fetch("https://font-system-detector-36829541347.asia-southeast3.run.app/fonts/check", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ fonts: uniqueFontFamilies }),
-        });
+        const response = await fetch(
+            "https://font-system-detector-36829541347.asia-southeast3.run.app/fonts/check",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ fonts: uniqueFontFamilies }),
+            }
+        );
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

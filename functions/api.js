@@ -19,7 +19,10 @@ export function scanAllFonts() {
         // Only store if we haven't seen this combination before
         if (!fontMap.has(key)) {
             // Extract just the first font family (remove fallbacks)
-            const primaryFamily = fontFamily.split(",")[0].replace(/['"]/g, "").trim();
+            const primaryFamily = fontFamily
+                .split(",")[0]
+                .replace(/['"]/g, "")
+                .trim();
 
             fontMap.set(key, {
                 family: primaryFamily,
@@ -34,7 +37,7 @@ export function scanAllFonts() {
     return Array.from(fontMap.values());
 }
 
-export function checkGoogleFonts(fonts) {
+export function checkFontsAvailability(fonts) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
             {
@@ -43,7 +46,10 @@ export function checkGoogleFonts(fonts) {
             },
             (response) => {
                 if (chrome.runtime.lastError) {
-                    console.error("Error sending message:", chrome.runtime.lastError);
+                    console.error(
+                        "Error sending message:",
+                        chrome.runtime.lastError
+                    );
                     resolve(new Map());
                     return;
                 }
@@ -52,7 +58,10 @@ export function checkGoogleFonts(fonts) {
                     const fontMap = new Map(Object.entries(response.data));
                     resolve(fontMap);
                 } else {
-                    console.error("Error checking Google Fonts:", response?.error);
+                    console.error(
+                        "Error checking Google Fonts:",
+                        response?.error
+                    );
                     resolve(new Map());
                 }
             }

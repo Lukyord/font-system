@@ -1,4 +1,9 @@
-export function displayFonts(fonts, loadingEl, resultsEl, googleFontsMap = null) {
+export function displayFonts(
+    fonts,
+    loadingEl,
+    resultsEl,
+    fontsAvailabilityMap = null
+) {
     loadingEl.style.display = "none";
 
     if (fonts.length === 0) {
@@ -30,7 +35,9 @@ export function displayFonts(fonts, loadingEl, resultsEl, googleFontsMap = null)
     });
 
     // Sort families alphabetically
-    const sortedFamilies = Array.from(fontsByFamily.keys()).sort((a, b) => a.localeCompare(b));
+    const sortedFamilies = Array.from(fontsByFamily.keys()).sort((a, b) =>
+        a.localeCompare(b)
+    );
 
     let html = "";
     html += `<div class="result-ttl"><h2 class="size-h3 weight-semibold">Results</h2></div>`;
@@ -38,20 +45,27 @@ export function displayFonts(fonts, loadingEl, resultsEl, googleFontsMap = null)
     html += `<div class="font-list">`;
     sortedFamilies.forEach((family) => {
         const familyMap = fontsByFamily.get(family);
-        const fontInfo = googleFontsMap?.get(family);
+        const fontInfo = fontsAvailabilityMap?.get(family);
         const links = fontInfo?.links || {};
         const googleFontLink = links.googleFont || null;
         const adobeFontLink = links.adobeFont || null;
+        const isFound = fontInfo?.found || false;
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+            family + " font"
+        )}`;
 
         html += `<div class="font-group">`;
         html += `<div class="font-family-header">`;
         html += `<div class="font-family-name"><span class="font-family-name-text">[${family}]</span>`;
         html += `<div class="font-family-header-right">`;
         if (googleFontLink) {
-            html += `<a href="${googleFontLink}" target="_blank" rel="noopener noreferrer" class="google-font-badge" title="View on Google Fonts">&nbsp;</a>`;
+            html += `<a href="${googleFontLink}" target="_blank" rel="noopener noreferrer" class="google-font-badge" title="View on Google Fonts"></a>`;
         }
         if (adobeFontLink) {
-            html += `<a href="${adobeFontLink}" target="_blank" rel="noopener noreferrer" class="adobe-font-badge" title="View on Adobe Fonts">&nbsp;</a>`;
+            html += `<a href="${adobeFontLink}" target="_blank" rel="noopener noreferrer" class="adobe-font-badge" title="View on Adobe Fonts"></a>`;
+        }
+        if (!isFound && !googleFontLink && !adobeFontLink) {
+            html += `<a href="${searchUrl}" target="_blank" rel="noopener noreferrer" class="search-font-badge" title="Search for ${family} font on Google"></a>`;
         }
         html += `</div>`;
         html += `</div>`;
@@ -74,8 +88,10 @@ export function displayFonts(fonts, loadingEl, resultsEl, googleFontsMap = null)
 
             // Sort weights numerically
             const sortedWeights = Array.from(sizeMap.keys()).sort((a, b) => {
-                const aNum = typeof a === "string" && a !== "normal" ? parseFloat(a) : 0;
-                const bNum = typeof b === "string" && b !== "normal" ? parseFloat(b) : 0;
+                const aNum =
+                    typeof a === "string" && a !== "normal" ? parseFloat(a) : 0;
+                const bNum =
+                    typeof b === "string" && b !== "normal" ? parseFloat(b) : 0;
                 return aNum - bNum;
             });
 
